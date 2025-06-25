@@ -31,10 +31,14 @@ export class PostController {
   }
 
   @Get()
-  async findAll(@Query('page') page: string, @Query('limit') limit: string) {
+  async findAll(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+    @Query('filter') filter?: string,
+  ) {
     const pageNumber = parseInt(page) || 1;
     const limitNumber = parseInt(limit) || 5;
-    return await this.postService.findAll(pageNumber, limitNumber);
+    return await this.postService.findAll(pageNumber, limitNumber, filter);
   }
 
   @Get(':id')

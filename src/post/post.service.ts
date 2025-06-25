@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { Repository } from 'typeorm';
+import { FindManyOptions, ILike, Repository } from 'typeorm';
 import { Post } from './entities/post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -27,19 +27,28 @@ export class PostService {
     return await this.postRepository.save(post);
   }
 
-  async findAll(page: number, limit: number) {
+  async findAll(page: number, limit: number, filter?: string) {
     if (page < 0 || limit < 0) {
       throw new BadRequestException('Page or/and limit cannot be negative');
     }
-    const [posts, totalCount] = await this.postRepository.findAndCount({
+
+    const queryOptions: FindManyOptions<Post> = {
       skip: (page - 1) * limit,
       take: limit,
       order: { createdAt: 'DESC' },
       relations: {
         user: true,
       },
-    });
-    const totalPages = Math.ceil(totalCount / limit);
+    };
+
+    if (filter) {
+      queryOptions.where = [{ title: ILike(`%${filter}%`) }];
+    }
+
+    const [posts, totalCount] =
+      await this.postRepository.findAndCount(queryOptions);
+    const totalPages =
+      Math.ceil(totalCount / limit) === 0 ? 1 : Math.ceil(totalCount / limit);
     if (page > totalPages) {
       throw new BadRequestException('Current page is above totalPages');
     }
