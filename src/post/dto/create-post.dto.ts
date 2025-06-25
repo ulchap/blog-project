@@ -7,4 +7,6 @@ export class CreatePostDto {
 
   @IsNotEmpty()
   description: string;
+
+  keywords: string;
 }

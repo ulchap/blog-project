@@ -19,18 +19,23 @@ export class PostService {
   ) {}
 
   async create(createPostDto: CreatePostDto, id: number) {
+    const keywords = this.generateKeywords(
+      createPostDto.title,
+      createPostDto.description,
+    );
     const post = {
       title: createPostDto.title,
       description: createPostDto.description,
       user: {
         id,
       },
+      keywords,
     };
     if (!post) throw new BadRequestException('Something went wrong');
     return await this.postRepository.save(post);
   }
 
-  async findAll(page: number, limit: number, filter?: string) {
+  async findAll(page: number, limit: number, filter?: string, search?: string) {
     if (page < 0 || limit < 0) {
       throw new BadRequestException('Page or/and limit cannot be negative');
     }
@@ -46,6 +51,10 @@ export class PostService {
 
     if (filter) {
       queryOptions.where = [{ title: ILike(`%${filter}%`) }];
+    }
+
+    if (search) {
+      queryOptions.where = [{ keywords: ILike(`%${search}%`) }];
     }
 
     const [posts, totalCount] =
@@ -80,7 +89,14 @@ export class PostService {
       where: { id },
     });
     if (!post) throw new NotFoundException('Post is not found');
-    console.log(id, updatePostDto);
+    if (updatePostDto.title || updatePostDto.description) {
+      const title = updatePostDto.title || post.title;
+      const description = updatePostDto.description || post.description;
+      updatePostDto = {
+        ...updatePostDto,
+        keywords: this.generateKeywords(title, description),
+      };
+    }
     return await this.postRepository.update(id, updatePostDto);
   }
 
@@ -124,5 +140,64 @@ export class PostService {
     const likes = ratings.filter((r) => r.value === 1).length;
     const dislikes = ratings.filter((r) => r.value === -1).length;
     return { likes, dislikes };
+  }
+
+  private generateKeywords(title: string, description: string): string {
+    const text = `${title} ${description}`.toLowerCase();
+    const cleaned = text.replace(/[^\w\s]/g, '');
+    const allWords = cleaned.split(/\s+/);
+
+    const stopwords = [
+      'и',
+      'в',
+      'во',
+      'не',
+      'на',
+      'но',
+      'а',
+      'от',
+      'по',
+      'с',
+      'у',
+      'же',
+      'то',
+      'что',
+      'этот',
+      'ли',
+      'бы',
+      'так',
+      'о',
+      'об',
+      'из',
+      'за',
+      'для',
+      'как',
+      'при',
+      'тот',
+      'чтобы',
+      'если',
+      'либо',
+    ];
+
+    const uniqueWords = allWords.filter(
+      (word, index, self) =>
+        word && self.indexOf(word) === index && !stopwords.includes(word),
+    );
+
+    const frequencyMap = {} as { [word: string]: number };
+    allWords.forEach((word) => {
+      if (!stopwords.includes(word)) {
+        frequencyMap[word] = (frequencyMap[word] || 0) + 1;
+      }
+    });
+
+    const sortedWords = uniqueWords.sort((a, b) => {
+      const freqA = frequencyMap[a] || 0;
+      const freqB = frequencyMap[b] || 0;
+      return freqB - freqA;
+    });
+
+    const topWords = sortedWords.slice(0, 40);
+    return topWords.join(', ');
   }
 }

@@ -35,10 +35,16 @@ export class PostController {
     @Query('page') page: string,
     @Query('limit') limit: string,
     @Query('filter') filter?: string,
+    @Query('search') search?: string,
   ) {
     const pageNumber = parseInt(page) || 1;
     const limitNumber = parseInt(limit) || 5;
-    return await this.postService.findAll(pageNumber, limitNumber, filter);
+    return await this.postService.findAll(
+      pageNumber,
+      limitNumber,
+      filter,
+      search,
+    );
   }
 
   @Get(':id')

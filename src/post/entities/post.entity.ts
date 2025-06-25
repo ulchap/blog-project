@@ -23,6 +23,9 @@ export class Post {
   @Column({ type: 'text', nullable: false })
   description: string;
 
+  @Column({ nullable: true })
+  keywords: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
