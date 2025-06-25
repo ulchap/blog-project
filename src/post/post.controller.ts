@@ -11,6 +11,7 @@ import {
   UsePipes,
   ValidationPipe,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -26,7 +27,6 @@ export class PostController {
   @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe())
   create(@Body() createPostDto: CreatePostDto, @Req() req) {
-    console.log(req.user);
     return this.postService.create(createPostDto, +req.user.id);
   }
 
@@ -57,5 +57,20 @@ export class PostController {
   @UseGuards(JwtAuthGuard, AuthorGuard)
   remove(@Param('id') id: string) {
     return this.postService.remove(+id);
+  }
+
+  @Patch(':id/rating')
+  @UseGuards(JwtAuthGuard)
+  async ratePost(
+    @Param('id', ParseIntPipe) postId: number,
+    @Req() req,
+    @Body('value', ParseIntPipe) value: number,
+  ) {
+    return await this.postService.ratePost(postId, +req.user.id, value);
+  }
+
+  @Get(':id/rating')
+  async getRating(@Param('id', ParseIntPipe) postId: number) {
+    return await this.postService.getPostRating(postId);
   }
 }

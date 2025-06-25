@@ -8,11 +8,14 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { FindManyOptions, ILike, Repository } from 'typeorm';
 import { Post } from './entities/post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PostRating } from './entities/post-rating.entity';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectRepository(Post) private readonly postRepository: Repository<Post>,
+    @InjectRepository(PostRating)
+    private readonly postRatingRepository: Repository<PostRating>,
   ) {}
 
   async create(createPostDto: CreatePostDto, id: number) {
@@ -88,5 +91,38 @@ export class PostService {
     if (!post) throw new NotFoundException('Post is not found');
 
     return await this.postRepository.delete(id);
+  }
+
+  async ratePost(postId: number, userId: number, value: number) {
+    if (![1, -1].includes(value)) {
+      throw new BadRequestException('Invalid rating value');
+    }
+    let rating = await this.postRatingRepository.findOne({
+      where: {
+        post: { id: postId },
+        user: { id: userId },
+      },
+    });
+
+    if (rating) {
+      rating.value = value;
+    } else {
+      rating = this.postRatingRepository.create({
+        value,
+        post: { id: postId } as any,
+        user: { id: userId } as any,
+      });
+    }
+
+    return await this.postRatingRepository.save(rating);
+  }
+
+  async getPostRating(postId: number) {
+    const ratings = await this.postRatingRepository.find({
+      where: { post: { id: postId } },
+    });
+    const likes = ratings.filter((r) => r.value === 1).length;
+    const dislikes = ratings.filter((r) => r.value === -1).length;
+    return { likes, dislikes };
   }
 }

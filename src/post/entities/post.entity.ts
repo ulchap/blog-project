@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { PostRating } from './post-rating.entity';
 
 @Entity()
 export class Post {
@@ -36,4 +37,10 @@ export class Post {
     onDelete: 'CASCADE',
   })
   comments: Comment[];
+
+  @OneToMany(() => PostRating, (rating) => rating.post, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  ratings: PostRating[];
 }

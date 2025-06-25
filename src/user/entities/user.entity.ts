@@ -1,4 +1,5 @@
 import { Comment } from 'src/comment/entities/comment.entity';
+import { PostRating } from 'src/post/entities/post-rating.entity';
 import { Post } from 'src/post/entities/post.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -45,4 +46,10 @@ export class User {
     onUpdate: 'CASCADE',
   })
   comments: Comment[];
+
+  @OneToMany(() => PostRating, (rating) => rating.user, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
+  postRatings: PostRating[];
 }
