@@ -27,13 +27,29 @@ export class PostService {
     return await this.postRepository.save(post);
   }
 
-  async findAll() {
-    return await this.postRepository.find({
+  async findAll(page: number, limit: number) {
+    if (page < 0 || limit < 0) {
+      throw new BadRequestException('Page or/and limit cannot be negative');
+    }
+    const [posts, totalCount] = await this.postRepository.findAndCount({
+      skip: (page - 1) * limit,
+      take: limit,
       order: { createdAt: 'DESC' },
       relations: {
         user: true,
       },
     });
+    const totalPages = Math.ceil(totalCount / limit);
+    if (page > totalPages) {
+      throw new BadRequestException('Current page is above totalPages');
+    }
+
+    return {
+      data: posts,
+      totalCount,
+      currentPage: page,
+      totalPages,
+    };
   }
 
   async findOne(id: number) {
