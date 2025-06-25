@@ -32,13 +32,13 @@ export class PostController {
 
   @Get()
   async findAll(
-    @Query('page') page: string,
-    @Query('limit') limit: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('filter') filter?: string,
     @Query('search') search?: string,
   ) {
-    const pageNumber = parseInt(page) || 1;
-    const limitNumber = parseInt(limit) || 5;
+    const pageNumber = page !== undefined ? parseInt(page) : 1;
+    const limitNumber = limit !== undefined ? parseInt(limit) : 5;
     return await this.postService.findAll(
       pageNumber,
       limitNumber,
@@ -55,7 +55,6 @@ export class PostController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, AuthorGuard)
   update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    console.log(id, updatePostDto);
     return this.postService.update(+id, updatePostDto);
   }
 
