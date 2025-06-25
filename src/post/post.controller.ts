@@ -25,6 +25,7 @@ export class PostController {
   @UseGuards(JwtAuthGuard)
   @UsePipes(new ValidationPipe())
   create(@Body() createPostDto: CreatePostDto, @Req() req) {
+    console.log(req.user);
     return this.postService.create(createPostDto, +req.user.id);
   }
 
@@ -41,6 +42,7 @@ export class PostController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, AuthorGuard)
   update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
+    console.log(id, updatePostDto);
     return this.postService.update(+id, updatePostDto);
   }
 

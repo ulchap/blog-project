@@ -1,5 +1,4 @@
 import { IsNotEmpty, MinLength } from 'class-validator';
-import { User } from 'src/user/entities/user.entity';
 
 export class CreatePostDto {
   @IsNotEmpty()
@@ -8,7 +7,4 @@ export class CreatePostDto {
 
   @IsNotEmpty()
   description: string;
-
-  @IsNotEmpty()
-  user: User;
 }

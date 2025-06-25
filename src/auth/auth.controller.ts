@@ -1,13 +1,5 @@
 import { AuthService } from './auth.service';
-import {
-  Controller,
-  Post,
-  UseGuards,
-  Request,
-  Get,
-  HttpStatus,
-  Res,
-} from '@nestjs/common';
+import { Controller, Post, UseGuards, Request, Get, Res } from '@nestjs/common';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleOauthGuard } from './guards/google-oauth.guard';

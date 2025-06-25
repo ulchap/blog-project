@@ -52,7 +52,7 @@ export class PostService {
       where: { id },
     });
     if (!post) throw new NotFoundException('Post is not found');
-
+    console.log(id, updatePostDto);
     return await this.postRepository.update(id, updatePostDto);
   }
 

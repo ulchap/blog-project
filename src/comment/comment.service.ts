@@ -19,7 +19,7 @@ export class CommentService {
   async create(createCommentDto: CreateCommentDto, id: number) {
     const comment = {
       text: createCommentDto.text,
-      post: { id: +createCommentDto.post },
+      post: { id: +createCommentDto.post.id },
       user: { id },
     };
     if (!comment) throw new BadRequestException('Something went wrong');
@@ -48,7 +48,12 @@ export class CommentService {
   async update(id: number, updateCommentDto: UpdateCommentDto) {
     const comment = await this.findOne(id);
     if (!comment) throw new NotFoundException('comment is not found');
-    const updatedComment = { ...comment, ...updateCommentDto };
+    const updates = { ...updateCommentDto };
+    if (updates.post) {
+      throw new BadRequestException('you cannot change postId');
+    }
+    const updatedComment = { ...comment, ...updates };
+
     return await this.commentRepository.save(updatedComment);
   }
 

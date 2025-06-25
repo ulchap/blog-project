@@ -13,7 +13,7 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
   ) {}
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto, res) {
     const existUser = await this.userRepository.findOne({
       where: {
         email: createUserDto.email,
@@ -21,10 +21,15 @@ export class UserService {
     });
     if (existUser)
       throw new BadRequestException('User with this email already exists');
-    const role =
-      createUserDto.role.toLowerCase() === 'admin'
-        ? UserRole.ADMIN
-        : UserRole.USER;
+    let role;
+    if (createUserDto.role) {
+      role =
+        createUserDto.role.toLowerCase() === 'admin'
+          ? UserRole.ADMIN
+          : UserRole.USER;
+    } else {
+      role = UserRole.USER;
+    }
     const user = await this.userRepository.save({
       name: createUserDto.name,
       email: createUserDto.email.toLowerCase(),
@@ -33,8 +38,15 @@ export class UserService {
     });
 
     const access_token = this.jwtService.sign({
+      id: user.id,
       email: createUserDto.email,
       role,
+    });
+    res.cookie('access_token', access_token, {
+      maxAge: 2592000000,
+      sameSite: 'strict',
+      secure: false, //change
+      httpOnly: true,
     });
 
     return { user, access_token };
