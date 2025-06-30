@@ -19,7 +19,7 @@ export class CommentService {
   async create(createCommentDto: CreateCommentDto, id: number) {
     const comment = {
       text: createCommentDto.text,
-      post: { id: +createCommentDto.post.id },
+      postId: createCommentDto.postId,
       user: { id },
     };
     if (!comment) throw new BadRequestException('Something went wrong');
@@ -49,7 +49,7 @@ export class CommentService {
     const comment = await this.findOne(id);
     if (!comment) throw new NotFoundException('comment is not found');
     const updates = { ...updateCommentDto };
-    if (updates.post) {
+    if (updates.postId) {
       throw new BadRequestException('you cannot change postId');
     }
     const updatedComment = { ...comment, ...updates };

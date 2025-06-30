@@ -29,7 +29,6 @@ export class AuthorOrAdminGuard implements CanActivate {
     if (user.role === 'admin') {
       return true;
     }
-    console.log(user, resourceType);
 
     if (resourceType === 'post') {
       const post = await this.postService.findOne(id);
