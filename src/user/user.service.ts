@@ -6,12 +6,14 @@ import { Repository } from 'typeorm';
 import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { UserRole } from './entities/user.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
   async create(createUserDto: CreateUserDto, res) {
     const existUser = await this.userRepository.findOne({
@@ -43,7 +45,7 @@ export class UserService {
       role,
     });
     res.cookie('access_token', access_token, {
-      maxAge: 2592000000,
+      maxAge: this.configService.getOrThrow('COOKIE_MAX_AGE'),
       sameSite: 'strict',
       secure: false, //change
       httpOnly: true,
