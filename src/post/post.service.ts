@@ -137,6 +137,9 @@ export class PostService {
     const ratings = await this.postRatingRepository.find({
       where: { post: { id: postId } },
     });
+    if (!ratings) {
+      throw new NotFoundException('Post not found');
+    }
     const likes = ratings.filter((r) => r.value === 1).length;
     const dislikes = ratings.filter((r) => r.value === -1).length;
     return { likes, dislikes };

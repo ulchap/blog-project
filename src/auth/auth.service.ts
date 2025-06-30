@@ -9,12 +9,14 @@ import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { IUser } from 'src/types/types';
 import { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -41,7 +43,7 @@ export class AuthService {
     });
 
     res.cookie('access_token', token, {
-      maxAge: 2592000000,
+      maxAge: this.configService.getOrThrow('COOKIE_MAX_AGE'),
       sameSite: 'strict',
       secure: false, //change
       httpOnly: true,
@@ -57,7 +59,7 @@ export class AuthService {
     try {
       const token = this.jwtService.sign({ id: user.id, email: user.email });
       res.cookie('access_token', token, {
-        maxAge: 2592000000,
+        maxAge: this.configService.getOrThrow('COOKIE_MAX_AGE'),
         sameSite: 'strict',
         secure: false, //change
         httpOnly: true,
