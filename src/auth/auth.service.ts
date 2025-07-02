@@ -30,7 +30,7 @@ export class AuthService {
     throw new UnauthorizedException('Password and/or email are incorrect');
   }
 
-  async login(user: IUser, res) {
+  async login(user: IUser, res: Response) {
     const findUser = await this.userService.findOne(user.email);
     if (!findUser) {
       throw new UnauthorizedException('User not found');
@@ -55,7 +55,7 @@ export class AuthService {
     };
   }
 
-  async googleLogin(user: any, res) {
+  googleLogin(user: IUser, res: Response) {
     try {
       const token = this.jwtService.sign({ id: user.id, email: user.email });
       res.cookie('access_token', token, {
@@ -65,7 +65,7 @@ export class AuthService {
         httpOnly: true,
       });
       return { user, token };
-    } catch (error) {
+    } catch {
       throw new HttpException(
         'Token creation error',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -73,7 +73,7 @@ export class AuthService {
     }
   }
 
-  async logout(res: Response) {
+  logout(res: Response) {
     res.clearCookie('access_token', {
       httpOnly: true,
       sameSite: 'strict',

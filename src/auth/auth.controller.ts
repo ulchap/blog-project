@@ -12,6 +12,7 @@ import {
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { RequestWithUser } from 'src/types/types';
 
 @Controller('auth')
 export class AuthController {
@@ -40,7 +41,10 @@ export class AuthController {
     },
   })
   @ApiUnauthorizedResponse({ description: 'Invalid email or password' })
-  async login(@Request() req, @Res({ passthrough: true }) res: Response) {
+  async login(
+    @Request() req: RequestWithUser,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     return this.authService.login(req.user, res);
   }
 
@@ -56,7 +60,7 @@ export class AuthController {
     },
   })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  getProfile(@Request() req) {
+  getProfile(@Request() req: RequestWithUser) {
     return req.user;
   }
 
@@ -68,7 +72,7 @@ export class AuthController {
     description: 'Cookie cleared, user logged out',
     schema: { example: { message: 'Logout successful' } },
   })
-  async logout(@Res({ passthrough: true }) res: Response) {
+  logout(@Res({ passthrough: true }) res: Response) {
     return this.authService.logout(res);
   }
 
@@ -93,8 +97,8 @@ export class AuthController {
     },
   })
   @ApiUnauthorizedResponse({ description: 'Google OAuth failed' })
-  async googleAuthCallback(
-    @Request() req,
+  googleAuthCallback(
+    @Request() req: RequestWithUser,
     @Res({ passthrough: true }) res: Response,
   ) {
     return this.authService.googleLogin(req.user, res);
