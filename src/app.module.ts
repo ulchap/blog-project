@@ -4,10 +4,11 @@ import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { PostModule } from './post/post.module';
 import { AuthModule } from './auth/auth.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommentModule } from './comment/comment.module';
 import { AdminModule } from './admin/admin.module';
+import { typeOrmConfig } from './config/typeorm.config';
 
 @Module({
   imports: [
@@ -16,20 +17,7 @@ import { AdminModule } from './admin/admin.module';
     AuthModule,
     AdminModule,
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('DB_HOST'),
-        username: configService.get('DB_USERNAME'),
-        port: configService.get('DB_PORT'),
-        password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_NAME'),
-        synchronize: true,
-        entities: [__dirname + '/**/*.entity{.js, .ts}'],
-      }),
-      inject: [ConfigService],
-    }),
+    TypeOrmModule.forRootAsync(typeOrmConfig),
     CommentModule,
   ],
   controllers: [AppController],

@@ -32,6 +32,8 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-call': 'off',
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
       '@typescript-eslint/no-unsafe-assignment': 'off',
+      'simple-import-sort/imports': 'error',
+      'simple-import-sort/exports': 'error',
     },
   },
 );
