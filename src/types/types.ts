@@ -9,3 +9,8 @@ export interface IUser {
 export interface RequestWithUser extends Request {
   user: IUser;
 }
+
+export interface MockResponse extends Partial<Response> {
+  cookie?: jest.Mock;
+  clearCookie?: jest.Mock;
+}

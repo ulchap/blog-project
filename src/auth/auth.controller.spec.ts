@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
+import { RequestWithUser } from 'src/types/types';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -32,7 +33,9 @@ describe('AuthController', () => {
 
   describe('login', () => {
     it('should call authService.login and return its result', async () => {
-      const req = { user: { id: 1, email: 'a@b.com', role: 'user' } } as any;
+      const req = {
+        user: { id: 1, email: 'a@b.com', role: 'user' },
+      } as unknown as RequestWithUser;
       const res = { cookie: jest.fn() } as unknown as Response;
       const expected = { user: req.user, access_token: 'jwt_token' };
 
@@ -77,7 +80,9 @@ describe('AuthController', () => {
 
   describe('googleAuthCallback', () => {
     it('should call authService.googleLogin and return its result', async () => {
-      const req = { user: { id: 3, email: 'e@f.com' } } as any;
+      const req = {
+        user: { id: 3, email: 'e@f.com' },
+      } as unknown as RequestWithUser;
       const res = { cookie: jest.fn() } as unknown as Response;
       const expected = { user: req.user, token: 'google_jwt' };
 

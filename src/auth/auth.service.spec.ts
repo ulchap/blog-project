@@ -7,16 +7,32 @@ import { AuthService } from './auth.service';
 import * as argon2 from 'argon2';
 import { IUser } from 'src/types/types';
 import { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 describe('AuthService', () => {
   let authService: AuthService;
   let userService: { findOne: jest.Mock };
   let jwtService: { sign: jest.Mock };
+  let configService: Partial<ConfigService>;
 
   beforeAll(() => {
     userService = { findOne: jest.fn() };
     jwtService = { sign: jest.fn() };
-    authService = new AuthService(userService as any, jwtService as any);
+    configService = {
+      get: jest.fn().mockImplementation((k) => {
+        if (k === 'COOKIE_MAX_AGE') return 2592000000;
+        return undefined;
+      }),
+      getOrThrow: jest.fn().mockImplementation((k) => {
+        if (k === 'COOKIE_MAX_AGE') return 2592000000;
+        throw new Error(`Missing env ${k}`);
+      }),
+    };
+    authService = new AuthService(
+      userService as any,
+      jwtService as any,
+      configService as any,
+    );
   });
 
   afterEach(() => {
@@ -66,9 +82,9 @@ describe('AuthService', () => {
 
     it('throws if userService.findOne returns null', async () => {
       userService.findOne.mockResolvedValue(null);
-      await expect(authService.login(userParam, res)).rejects.toThrow(
-        new UnauthorizedException('User not found'),
-      );
+      await expect(
+        authService.login(userParam, res as Response),
+      ).rejects.toThrow(new UnauthorizedException('User not found'));
       expect(userService.findOne).toHaveBeenCalledWith(userParam.email);
     });
 
@@ -98,7 +114,7 @@ describe('AuthService', () => {
   });
 
   describe('googleLogin', () => {
-    const googleUser = { id: 5, email: 'g@example.com' };
+    const googleUser = { id: '5', email: 'g@example.com', role: 'user' };
     const token = 'google_jwt';
     let res: Partial<Response>;
 

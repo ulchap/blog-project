@@ -55,7 +55,7 @@ export class AuthService {
     };
   }
 
-  googleLogin(user: IUser, res: Response) {
+  async googleLogin(user: IUser, res: Response) {
     try {
       const token = this.jwtService.sign({ id: user.id, email: user.email });
       res.cookie('access_token', token, {
@@ -73,7 +73,7 @@ export class AuthService {
     }
   }
 
-  logout(res: Response) {
+  async logout(res: Response): Promise<{ message: string }> {
     res.clearCookie('access_token', {
       httpOnly: true,
       sameSite: 'strict',

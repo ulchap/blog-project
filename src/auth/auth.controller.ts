@@ -72,8 +72,8 @@ export class AuthController {
     description: 'Cookie cleared, user logged out',
     schema: { example: { message: 'Logout successful' } },
   })
-  logout(@Res({ passthrough: true }) res: Response) {
-    return this.authService.logout(res);
+  async logout(@Res({ passthrough: true }) res: Response) {
+    return await this.authService.logout(res);
   }
 
   @Get('google')
@@ -97,10 +97,10 @@ export class AuthController {
     },
   })
   @ApiUnauthorizedResponse({ description: 'Google OAuth failed' })
-  googleAuthCallback(
+  async googleAuthCallback(
     @Request() req: RequestWithUser,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.googleLogin(req.user, res);
+    return await this.authService.googleLogin(req.user, res);
   }
 }
