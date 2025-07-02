@@ -15,4 +15,4 @@ export interface MockResponse extends Partial<Response> {
   clearCookie?: jest.Mock;
 }
 
-export type SortFilter = 'date_asc' | 'date_desc';
+export type DateSort = 'date_asc' | 'date_desc';

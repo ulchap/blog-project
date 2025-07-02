@@ -63,7 +63,7 @@ export class PostController {
     required: false,
     type: String,
     example: 'rating_desc',
-    description: 'Sort order: rating_asc, rating_desc, date_asc, date_desc',
+    description: 'Sort order: date_asc, date_desc',
   })
   @ApiQuery({
     name: 'search',

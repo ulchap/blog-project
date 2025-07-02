@@ -63,7 +63,7 @@ describe('PostController', () => {
     it('should call postService.findAll with parsed query parameters and return result', async () => {
       const page = '2';
       const limit = '10';
-      const filter = 'sample';
+      const filter = 'date_desc';
       const search = 'keyword';
       const expectedResult = {
         data: [{ id: 1, title: 'Post' }],

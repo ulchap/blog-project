@@ -5,11 +5,11 @@ import {
 } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { Repository } from 'typeorm';
+import { FindManyOptions, ILike, Repository } from 'typeorm';
 import { Post } from './entities/post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PostRating } from './entities/post-rating.entity';
-import { SortFilter } from 'src/types/types';
+import { DateSort } from 'src/types/types';
 
 @Injectable()
 export class PostService {
@@ -36,61 +36,45 @@ export class PostService {
     return await this.postRepository.save(post);
   }
 
-  async findAll(
-    page: number,
-    limit: number,
-    filter?: SortFilter,
-    search?: string,
-  ) {
-    try {
-      if (page < 0 || limit < 0) {
-        throw new BadRequestException('Page or/and limit cannot be negative');
-      }
-
-      const qb = this.postRepository
-        .createQueryBuilder('post')
-        .leftJoinAndSelect('post.user', 'user')
-        .leftJoin('post.ratings', 'rating')
-        .groupBy('post.id')
-        .addGroupBy('user.id');
-
-      if (search) {
-        qb.andWhere('(post.title ILIKE :s OR post.keywords ILIKE :s)', {
-          s: `%${search}%`,
-        });
-      }
-
-      switch (filter) {
-        case 'date_asc':
-          qb.orderBy('post.createdAt', 'ASC');
-          break;
-        case 'date_desc':
-          qb.orderBy('post.createdAt', 'DESC');
-          break;
-        default:
-          qb.orderBy('post.createdAt', 'DESC');
-      }
-      const skip = (page - 1) * limit;
-      qb.skip(skip).take(limit);
-      const [posts, totalCount] = await qb.getManyAndCount();
-      console.log(posts, totalCount);
-
-      const totalPages = Math.max(1, Math.ceil(totalCount / limit));
-      if (page > totalPages) {
-        throw new BadRequestException('Page number exceeds total pages');
-      }
-
-      return {
-        data: posts,
-        totalCount,
-        currentPage: page,
-        totalPages,
-      };
-    } catch (err) {
-      console.log(err);
+  async findAll(page: number, limit: number, filter?: string, search?: string) {
+    if (page < 0 || limit < 0) {
+      throw new BadRequestException('Page or/and limit cannot be negative');
     }
-  }
 
+    const queryOptions: FindManyOptions<Post> = {
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { createdAt: 'DESC' },
+      relations: {
+        user: true,
+      },
+    };
+
+    if (filter === 'date_asc') {
+      queryOptions.order = { createdAt: 'ASC' };
+    } else {
+      queryOptions.order = { createdAt: 'DESC' };
+    }
+
+    if (search) {
+      queryOptions.where = [{ keywords: ILike(`%${search}%`) }];
+    }
+
+    const [posts, totalCount] =
+      await this.postRepository.findAndCount(queryOptions);
+    const totalPages =
+      Math.ceil(totalCount / limit) === 0 ? 1 : Math.ceil(totalCount / limit);
+    if (page > totalPages) {
+      throw new BadRequestException('Current page is above totalPages');
+    }
+
+    return {
+      data: posts,
+      totalCount,
+      currentPage: page,
+      totalPages,
+    };
+  }
   async findOne(id: number) {
     const post = await this.postRepository.findOne({
       where: { id },
