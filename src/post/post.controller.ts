@@ -58,7 +58,13 @@ export class PostController {
   })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
-  @ApiQuery({ name: 'filter', required: false, type: String, example: 'date' })
+  @ApiQuery({
+    name: 'filter',
+    required: false,
+    type: String,
+    example: 'rating_desc',
+    description: 'Sort order: rating_asc, rating_desc, date_asc, date_desc',
+  })
   @ApiQuery({
     name: 'search',
     required: false,
@@ -78,7 +84,7 @@ export class PostController {
     return await this.postService.findAll(
       pageNumber,
       limitNumber,
-      filter,
+      filter as any,
       search,
     );
   }
