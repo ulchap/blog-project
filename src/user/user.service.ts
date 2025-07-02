@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -7,6 +12,8 @@ import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { UserRole } from './entities/user.entity';
 import { ConfigService } from '@nestjs/config';
+import { IUser } from 'src/types/types';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -59,5 +66,45 @@ export class UserService {
       where: { email },
       select: ['id', 'email', 'name', 'password', 'role'],
     });
+  }
+
+  async remove(id: number) {
+    const user = await this.userRepository.findOne({
+      where: { id },
+    });
+    if (!user) throw new NotFoundException('User is not found');
+
+    return await this.userRepository.delete(id);
+  }
+
+  async findAll() {
+    return await this.userRepository.find();
+  }
+
+  async update(current: IUser, id: number, dto: UpdateUserDto) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User not found`);
+    }
+
+    if (dto.name) {
+      if (+current.id !== id) {
+        throw new ForbiddenException(
+          'You can change name only for your own profile',
+        );
+      }
+      user.name = dto.name;
+    }
+
+    if (dto.role) {
+      if (current.role !== 'admin') {
+        throw new ForbiddenException('Only admin can change roles');
+      }
+      user.role =
+        dto.role.toLowerCase() === 'admin' ? UserRole.ADMIN : UserRole.USER;
+    }
+
+    await this.userRepository.save(user);
+    return user;
   }
 }
